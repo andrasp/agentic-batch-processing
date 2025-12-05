@@ -1,0 +1,13 @@
+Analyze each image in <repo>/demo/photos and extract what you see.
+
+For people: describe who they are, their expression, what they're doing, approximate age.
+
+For animals: what species, what they're doing, their environment.
+
+For places/scenes: where is it, time of day, weather, notable features.
+
+For all images: note the dominant colors, the overall mood, and what kind of project this image would work well for.
+
+Store everything in <repo>/demo/output/photo_analysis.db
+
+Then create <repo>/demo/output/report.html showing each photo with its extracted data. Add some summary stats at the top.

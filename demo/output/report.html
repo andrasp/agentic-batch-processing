@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Analysis Report</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --category-person: #ec4899;
+            --category-animal: #10b981;
+            --category-place: #3b82f6;
+            --category-mixed: #f59e0b;
+            --category-object: #8b5cf6;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Filter Buttons */
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Summary Section */
+        .summary-section {
+            margin-bottom: 3rem;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-breakdown {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .category-badge.person { background: rgba(236, 72, 153, 0.15); color: var(--category-person); }
+        .category-badge.animal { background: rgba(16, 185, 129, 0.15); color: var(--category-animal); }
+        .category-badge.place { background: rgba(59, 130, 246, 0.15); color: var(--category-place); }
+        .category-badge.mixed { background: rgba(245, 158, 11, 0.15); color: var(--category-mixed); }
+        .category-badge.object { background: rgba(139, 92, 246, 0.15); color: var(--category-object); }
+
+        /* Stats Lists */
+        .stats-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .stats-tag {
+            background: var(--bg-secondary);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Color Swatches in Summary */
+        .color-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .color-swatch {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+        }
+
+        /* Photo Gallery */
+        .gallery-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 2rem;
+        }
+
+        .photo-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .photo-card.hidden {
+            display: none;
+        }
+
+        .photo-wrapper {
+            position: relative;
+            aspect-ratio: 4/3;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+
+        .photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .photo-card:hover .photo-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .photo-category {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .photo-category.person { background: var(--category-person); color: white; }
+        .photo-category.animal { background: var(--category-animal); color: white; }
+        .photo-category.place { background: var(--category-place); color: white; }
+        .photo-category.mixed { background: var(--category-mixed); color: white; }
+        .photo-category.object { background: var(--category-object); color: white; }
+
+        .photo-content {
+            padding: 1.5rem;
+        }
+
+        .photo-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .photo-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .photo-meta {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Photo Color Swatches */
+        .photo-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .photo-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 0.375rem;
+            border: 2px solid var(--border-color);
+            cursor: help;
+            transition: transform 0.2s;
+        }
+
+        .photo-color:hover {
+            transform: scale(1.2);
+        }
+
+        /* Photo Tags */
+        .photo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+
+        .use-tag {
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            color: white;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.375rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Info Sections */
+        .info-section {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .info-item {
+            font-size: 0.75rem;
+        }
+
+        .info-item strong {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .info-item span {
+            color: var(--text-secondary);
+            display: block;
+        }
+
+        /* Expandable Details */
+        .details-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            background: var(--bg-secondary);
+            border: none;
+            border-radius: 0.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .details-toggle:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .details-toggle svg {
+            transition: transform 0.2s;
+        }
+
+        .details-toggle.expanded svg {
+            transform: rotate(180deg);
+        }
+
+        .expanded-details {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .expanded-details.show {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.375rem;
+        }
+
+        .detail-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Photo Analysis Report</h1>
+            <div class="header-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                    <span id="theme-label">Dark Mode</span>
+                </button>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="person">People</button>
+                <button class="filter-btn" data-filter="animal">Animals</button>
+                <button class="filter-btn" data-filter="place">Places</button>
+                <button class="filter-btn" data-filter="mixed">Mixed</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Summary Statistics -->
+        <section class="summary-section">
+            <div class="summary-grid">
+                <div class="stat-card">
+                    <h3>Total Photos Analyzed</h3>
+                    <div class="stat-value">12</div>
+                    <div class="stat-breakdown">
+                        <span class="category-badge person">4 People</span>
+                        <span class="category-badge animal">3 Animals</span>
+                        <span class="category-badge place">3 Places</span>
+                        <span class="category-badge mixed">2 Mixed</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Most Common Colors</h3>
+                    <div class="color-grid">
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #1e3a5f"></div>
+                            <span>Navy Blue</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #228B22"></div>
+                            <span>Green</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #333333"></div>
+                            <span>Black</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #D2B48C"></div>
+                            <span>Tan/Beige</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #808080"></div>
+                            <span>Gray</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #FFFFFF; border: 2px solid #e2e8f0"></div>
+                            <span>White</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #8B4513"></div>
+                            <span>Brown</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch" style="background: #FFA500"></div>
+                            <span>Amber/Orange</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Common Moods</h3>
+                    <div class="stats-list">
+                        <span class="stats-tag">Peaceful</span>
+                        <span class="stats-tag">Serene</span>
+                        <span class="stats-tag">Atmospheric</span>
+                        <span class="stats-tag">Professional</span>
+                        <span class="stats-tag">Authentic</span>
+                        <span class="stats-tag">Nostalgic</span>
+                        <span class="stats-tag">Majestic</span>
+                        <span class="stats-tag">Intimate</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Top Suggested Uses</h3>
+                    <div class="stats-list">
+                        <span class="stats-tag">Travel Blog</span>
+                        <span class="stats-tag">Nature/Wildlife</span>
+                        <span class="stats-tag">Documentary</span>
+                        <span class="stats-tag">Tourism Marketing</span>
+                        <span class="stats-tag">Editorial</span>
+                        <span class="stats-tag">Educational</span>
+                        <span class="stats-tag">Wall Art</span>
+                        <span class="stats-tag">Social Media</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Photo Gallery -->
+        <section class="gallery-section">
+            <h2>Photo Gallery</h2>
+            <div class="gallery-grid">
+                <!-- Photo 1 -->
+                <div class="photo-card" data-category="person">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo1.jpg" alt="Two elderly gentlemen in early 20th century formal attire" loading="lazy">
+                        <span class="photo-category person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo1.jpg</h3>
+                        <p class="photo-description">Two elderly gentlemen in early 20th century formal attire. The man on the left appears to be in his 70s-80s with a white beard and mustache. The man on the right appears to be in his 50s-60s, clean-shaven with a fuller build.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #8B7355" title="sepia brown"></div>
+                                    <div class="photo-color" style="background: #FFFDD0" title="warm cream"></div>
+                                    <div class="photo-color" style="background: #36454F" title="dark charcoal"></div>
+                                    <div class="photo-color" style="background: #8A8D8F" title="stone gray"></div>
+                                    <div class="photo-color" style="background: #FFFFF0" title="ivory white"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">historical documentary</span>
+                                    <span class="use-tag">educational materials</span>
+                                    <span class="use-tag">museum exhibit</span>
+                                    <span class="use-tag">biography illustration</span>
+                                    <span class="use-tag">vintage fashion reference</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Formal, dignified, historical</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Daytime, midday</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Clear, dry</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Excellent</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Exterior of a grand building with classical architecture featuring white columns and ornate stone steps; appears to be an institutional or governmental building</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Classical white columns, stone steps, period-appropriate fedora hats, three-piece suits with watch chains, tall lace-up leather boots, bow tie on older gentleman, standard necktie on younger man</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">A striking historical photograph depicting two distinguished gentlemen of apparent importance, seated casually yet formally on the steps of what appears to be a significant public building. The older man wears a wide-brimmed fedora, three-piece tweed suit with a bow tie, and distinctive tall lace-up boots. His posture is relaxed yet dignified. The younger man beside him wears similar formal attire with a standard tie and also sports a fedora. Both men project an air of authority and social standing. The sepia toning and fashion elements clearly date this photograph to the early 1900s.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 2 -->
+                <div class="photo-card" data-category="person">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo2.jpg" alt="Street musician playing mandolin" loading="lazy">
+                        <span class="photo-category person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo2.jpg</h3>
+                        <p class="photo-description">Young adult male, approximately 25-35 years old, with reddish-brown beard and curly hair, wearing casual blue henley shirt and jeans, appears to be a street musician/busker</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #000080" title="navy blue"></div>
+                                    <div class="photo-color" style="background: #D4A574" title="warm beige/natural wood"></div>
+                                    <div class="photo-color" style="background: #4A4A4A" title="dark gray stone"></div>
+                                    <div class="photo-color" style="background: #1C1C1C" title="black iron"></div>
+                                    <div class="photo-color" style="background: #6F8FAF" title="denim blue"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">travel blog</span>
+                                    <span class="use-tag">music website</span>
+                                    <span class="use-tag">cultural tourism</span>
+                                    <span class="use-tag">European travel guide</span>
+                                    <span class="use-tag">lifestyle magazine</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Peaceful, artistic, contemplative</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Daytime, afternoon</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Clear, dry</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Playing a mandolin or Portuguese guitar while seated on the street, performing as a busker</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Urban European setting, seated on stone/concrete in front of ornate wrought iron gates or doors of what appears to be a historic building with dark stone architecture</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Ornate decorative wrought iron scrollwork gate/door behind subject, stone pillars, guitar case visible beside performer, red amplifier or box, traditional European architecture</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">Candid street photography capturing a male busker playing what appears to be a mandolin or Portuguese guitar. The musician is fully absorbed in his performance, seated casually on the street in front of what looks like a historic European building entrance with elaborate ironwork. His relaxed posture and closed eyes convey deep connection to the music. The warm lighting and urban setting create an authentic, atmospheric scene typical of European city street culture.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 3 -->
+                <div class="photo-card" data-category="person">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo3.jpg" alt="Sushi chef at work" loading="lazy">
+                        <span class="photo-category person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo3.jpg</h3>
+                        <p class="photo-description">Young male sushi chef (mid-20s) with curly hair, wearing black chef coat and food-handling gloves. Additional kitchen staff visible in background.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #000000" title="black"></div>
+                                    <div class="photo-color" style="background: #FFBF00" title="warm amber/orange"></div>
+                                    <div class="photo-color" style="background: #808080" title="gray"></div>
+                                    <div class="photo-color" style="background: #DC143C" title="red accents"></div>
+                                    <div class="photo-color" style="background: #8B4513" title="brown"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">food blog</span>
+                                    <span class="use-tag">restaurant website</span>
+                                    <span class="use-tag">culinary magazine</span>
+                                    <span class="use-tag">hospitality marketing</span>
+                                    <span class="use-tag">chef profile</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Professional, atmospheric</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Evening/night</span></div>
+                                <div class="info-item"><strong>Setting:</strong> <span>Indoor restaurant</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Preparing sushi/food at restaurant counter</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Modern sushi restaurant interior with sushi display counter, ambient lighting, gray geometric wall pattern, professional kitchen setup</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Sushi display case in foreground, geometric patterned wall, warm accent lighting creating atmospheric mood, shallow depth of field photography</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">Professional photograph capturing the atmosphere of a working sushi restaurant kitchen. The main subject is a young chef with distinctive curly hair working at the sushi counter. The image uses shallow depth of field to focus on the foreground chef while creating a pleasant blur of the background activity. The warm amber and red lighting creates an inviting restaurant atmosphere.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 4 -->
+                <div class="photo-card" data-category="person">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo4.jpg" alt="Figure skater performing" loading="lazy">
+                        <span class="photo-category person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo4.jpg</h3>
+                        <p class="photo-description">Young female figure skater, appears to be in her late teens or early twenties, with long brown hair flowing dramatically during the move. Wearing all-black practice attire with white figure skates.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #F5F5F5" title="white/ice gray"></div>
+                                    <div class="photo-color" style="background: #000000" title="black"></div>
+                                    <div class="photo-color" style="background: #228B22" title="green (rink board)"></div>
+                                    <div class="photo-color" style="background: #D2B48C" title="warm beige/tan"></div>
+                                    <div class="photo-color" style="background: #FFD700" title="yellow (rink stripe)"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">sports magazine</span>
+                                    <span class="use-tag">figure skating promotion</span>
+                                    <span class="use-tag">athletic training</span>
+                                    <span class="use-tag">winter sports content</span>
+                                    <span class="use-tag">fitness inspiration</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Artistic, graceful, dramatic</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Daytime practice</span></div>
+                                <div class="info-item"><strong>Setting:</strong> <span>Indoor ice rink</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>High quality</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Performing a dramatic back-bend move on the ice, body arched backward with one hand touching the ice for support, demonstrating exceptional flexibility and skating skill</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Indoor ice skating rink with typical rink boards visible, glass barriers, and warm-toned lighting in the background</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Exceptional back-bend flexibility, dramatic hair flow creating dynamic movement, contrast between dark clothing and light ice surface, professional skating form</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This image captures a figure skater mid-performance during what appears to be a practice session. The skater demonstrates remarkable flexibility and control in a dramatic back-bend position on the ice. Her long brown hair cascades toward the ice, creating a dynamic visual element that emphasizes the fluidity of the movement.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 5 -->
+                <div class="photo-card" data-category="mixed">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo5.jpg" alt="Giraffe crossing road on safari" loading="lazy">
+                        <span class="photo-category mixed">Mixed</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo5.jpg</h3>
+                        <p class="photo-description">A giraffe crossing a dirt road in front of safari vehicles. The giraffe is a Masai or Rothschild giraffe with distinctive brown patches on tan coat.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #228B22" title="forest green"></div>
+                                    <div class="photo-color" style="background: #808000" title="olive green"></div>
+                                    <div class="photo-color" style="background: #D2B48C" title="tan/beige"></div>
+                                    <div class="photo-color" style="background: #8B4513" title="brown"></div>
+                                    <div class="photo-color" style="background: #FFFDD0" title="cream/white"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">travel blog</span>
+                                    <span class="use-tag">safari tour promotion</span>
+                                    <span class="use-tag">wildlife documentary</span>
+                                    <span class="use-tag">African tourism</span>
+                                    <span class="use-tag">nature magazine</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Adventurous, serene</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Morning/late afternoon</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Clear and dry</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good quality</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Giraffe crossing road during safari game drive; tourists watching and photographing wildlife</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">African savanna/woodland setting, likely Kenya (based on KCU license plate). Acacia and other indigenous trees line a dirt safari road in what appears to be a national park or game reserve.</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Kenyan license plate (KCU 008H), KOBO safari company branding on spare tire covers, distinctive orange/red chevron safety markings on safari vehicle, open-top safari vehicle design</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">Classic African safari scene capturing an authentic wildlife encounter. A single giraffe confidently crosses a dusty road while safari tourists in traditional 4x4 vehicles watch. The image beautifully captures the essence of an East African game drive experience.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 6 -->
+                <div class="photo-card" data-category="animal">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo6.jpg" alt="Gulls in flight over ocean" loading="lazy">
+                        <span class="photo-category animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo6.jpg</h3>
+                        <p class="photo-description">Four black-headed gulls (Chroicocephalus ridibundus) in flight over the ocean. These seabirds have distinctive dark brown/black heads, white bodies, grey wings with black tips.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #A9A9A9" title="soft grey"></div>
+                                    <div class="photo-color" style="background: #FFFFFF; border: 2px solid #e2e8f0" title="white"></div>
+                                    <div class="photo-color" style="background: #5F9EA0" title="muted teal-blue"></div>
+                                    <div class="photo-color" style="background: #36454F" title="charcoal black"></div>
+                                    <div class="photo-color" style="background: #D2B48C" title="beige-tan"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">nature blog</span>
+                                    <span class="use-tag">coastal tourism</span>
+                                    <span class="use-tag">wildlife portfolio</span>
+                                    <span class="use-tag">meditation content</span>
+                                    <span class="use-tag">wall art prints</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Serene, peaceful, contemplative</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Morning/late afternoon</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Overcast/cloudy</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>High quality</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Flying in formation over ocean waves, possibly foraging or traveling along the coastline</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Coastal beach environment with ocean waves visible in the background, overcast sky</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Beautiful composition capturing four gulls at different flight angles and positions; shallow depth of field with background waves slightly blurred; minimalist color palette creates artistic effect</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">A beautifully composed wildlife photograph featuring four black-headed gulls captured mid-flight over ocean waves. The soft, muted color palette and overcast lighting create a calming, almost dreamy atmosphere.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 7 -->
+                <div class="photo-card" data-category="animal">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo7.jpg" alt="Dog portrait with head tilt" loading="lazy">
+                        <span class="photo-category animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo7.jpg</h3>
+                        <p class="photo-description">Medium-sized mixed breed dog, likely a Shepherd mix (possibly Australian Shepherd or Kelpie mix). Black and tan coloring with distinctive tri-color markings. Adult dog, well-groomed coat.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #000000" title="black"></div>
+                                    <div class="photo-color" style="background: #D2691E" title="tan/caramel"></div>
+                                    <div class="photo-color" style="background: #696969" title="dark grey"></div>
+                                    <div class="photo-color" style="background: #8B4513" title="brown"></div>
+                                    <div class="photo-color" style="background: #FFFDD0" title="cream"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">pet photography</span>
+                                    <span class="use-tag">adoption campaigns</span>
+                                    <span class="use-tag">veterinary clinic</span>
+                                    <span class="use-tag">pet product marketing</span>
+                                    <span class="use-tag">greeting cards</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Warm, endearing, intimate</span></div>
+                                <div class="info-item"><strong>Setting:</strong> <span>Studio lighting</span></div>
+                                <div class="info-item"><strong>Expression:</strong> <span>Curious, attentive</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Excellent</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Posing for a portrait photograph, sitting still and looking directly at the camera with a characteristic head tilt</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Professional photography studio setting with a dark grey/brown textured backdrop. Indoor, controlled lighting environment.</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Adorable head tilt with one ear flopped and one partially erect, expressive amber-brown eyes, tri-color coat pattern (black, tan, and cream), well-defined facial markings with tan eyebrows and cheeks</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This is a beautifully executed professional dog portrait. The dog appears to be a mixed breed with Shepherd characteristics, displaying the classic head-tilt pose that makes dog portraits particularly engaging. The lighting is expertly done, creating subtle highlights on the fur while maintaining detail in the dark black coat.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 8 -->
+                <div class="photo-card" data-category="animal">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo8.jpg" alt="Yellow seahorse" loading="lazy">
+                        <span class="photo-category animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo8.jpg</h3>
+                        <p class="photo-description">Yellow seahorse (Hippocampus), likely a common seahorse or lined seahorse species. Vibrant bright yellow coloration with textured, bumpy skin characteristic of seahorses.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #FFD700" title="bright yellow"></div>
+                                    <div class="photo-color" style="background: #006400" title="deep green"></div>
+                                    <div class="photo-color" style="background: #000080" title="dark navy blue"></div>
+                                    <div class="photo-color" style="background: #F4A460" title="sandy beige"></div>
+                                    <div class="photo-color" style="background: #FFFAF0" title="white sand"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">nature documentary</span>
+                                    <span class="use-tag">marine biology</span>
+                                    <span class="use-tag">aquarium website</span>
+                                    <span class="use-tag">children's education</span>
+                                    <span class="use-tag">wall art print</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Peaceful, ethereal, magical</span></div>
+                                <div class="info-item"><strong>Setting:</strong> <span>Aquarium</span></div>
+                                <div class="info-item"><strong>Expression:</strong> <span>Calm and serene</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good quality</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Floating/hovering in the water column, tail curled in typical seahorse resting posture, appears to be gently drifting near aquatic plants</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Aquarium or marine tank setting with sandy substrate, green aquatic plants/seaweed in background, clear water with good visibility</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Perfectly curled tail in classic spiral shape, delicate fin membrane visible on back, textured bumpy skin, elongated tubular snout</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This is a beautifully composed photograph of a bright yellow seahorse in what appears to be an aquarium setting. The seahorse is the clear focal point, positioned centrally in the frame with its distinctive curled tail and elongated snout clearly visible.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 9 -->
+                <div class="photo-card" data-category="place">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo9.jpg" alt="Abandoned industrial factory" loading="lazy">
+                        <span class="photo-category place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo9.jpg</h3>
+                        <p class="photo-description">Abandoned industrial factory complex in severe decay - appears to be a former manufacturing plant or warehouse with multiple stories of brick and concrete structures</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #8B4513" title="dark brown/rust"></div>
+                                    <div class="photo-color" style="background: #808080" title="concrete gray"></div>
+                                    <div class="photo-color" style="background: #6B8E23" title="muted olive green"></div>
+                                    <div class="photo-color" style="background: #D3D3D3" title="overcast white/gray"></div>
+                                    <div class="photo-color" style="background: #36454F" title="deep charcoal"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">urban exploration</span>
+                                    <span class="use-tag">documentary</span>
+                                    <span class="use-tag">album artwork</span>
+                                    <span class="use-tag">game concept art</span>
+                                    <span class="use-tag">art projects</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Haunting, melancholic</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Daytime, overcast</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Gray skies, cold</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Urban decay scene showing demolished industrial buildings with exposed structural framework, rubble-covered ground, dead vegetation, and skeletal remains of multi-story factory buildings</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Graffiti visible on building, exposed structural steel and concrete framework, empty window frames throughout multiple stories, debris and rubble covering the ground, bare tree branches growing through structures</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This image captures classic urban decay photography of what appears to be an abandoned American industrial complex, possibly from the Rust Belt region. The symmetrical composition draws the eye through the rubble-strewn foreground into the skeletal buildings. The muted, desaturated color palette emphasizes the desolation.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 10 -->
+                <div class="photo-card" data-category="place">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo10.jpg" alt="Japanese yokocho alley" loading="lazy">
+                        <span class="photo-category place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo10.jpg</h3>
+                        <p class="photo-description">Traditional Japanese yokocho (narrow alley) with izakaya bars and restaurants, featuring glowing paper lanterns and neon signs with Japanese text</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #FFBF00" title="warm amber/orange"></div>
+                                    <div class="photo-color" style="background: #00BFFF" title="cool neon blue"></div>
+                                    <div class="photo-color" style="background: #1C1C1C" title="dark gray/black"></div>
+                                    <div class="photo-color" style="background: #DC143C" title="red"></div>
+                                    <div class="photo-color" style="background: #FFFDD0" title="cream/white"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">travel blog</span>
+                                    <span class="use-tag">Japan tourism</span>
+                                    <span class="use-tag">cultural documentary</span>
+                                    <span class="use-tag">nightlife editorial</span>
+                                    <span class="use-tag">Asia travel guides</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Nostalgic, intimate</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Evening/night</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Recently rained</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Excellent</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Narrow urban alley in Japan (likely Tokyo Shinjuku area), lined with traditional small restaurants and bars, wet pavement suggesting recent rain</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Traditional paper lanterns (chochin) with Japanese characters, illuminated restaurant signs including Sushi Tatsu, Asahi beer branding, narrow atmospheric passageway with hanging plants</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This is a quintessential Japanese yokocho scene, likely from Omoide Yokocho or a similar historic alley in Shinjuku, Tokyo. The image captures the essence of traditional Japanese nightlife culture with small izakaya establishments. The mix of warm lantern light and cool neon creates an evocative color palette emblematic of Japanese urban photography.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 11 -->
+                <div class="photo-card" data-category="place">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo11.jpg" alt="Snow-capped mountain at sunset" loading="lazy">
+                        <span class="photo-category place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo11.jpg</h3>
+                        <p class="photo-description">Majestic snow-capped mountain peak silhouetted against a dramatic sunset sky with layered mountain ridges in the foreground</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #000080" title="deep navy blue"></div>
+                                    <div class="photo-color" style="background: #FF8C00" title="warm orange/amber"></div>
+                                    <div class="photo-color" style="background: #FFB6C1" title="soft pink"></div>
+                                    <div class="photo-color" style="background: #4B0082" title="dark purple/maroon"></div>
+                                    <div class="photo-color" style="background: #FFFFFF; border: 2px solid #e2e8f0" title="white (snow)"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">travel blog</span>
+                                    <span class="use-tag">nature calendar</span>
+                                    <span class="use-tag">wall art print</span>
+                                    <span class="use-tag">desktop wallpaper</span>
+                                    <span class="use-tag">outdoor adventure</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Majestic, serene</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Golden hour - sunset</span></div>
+                                <div class="info-item"><strong>Weather:</strong> <span>Clear skies</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Excellent</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Alpine mountain range with prominent snow-covered peak, multiple ridgelines creating depth, dramatic sky backdrop</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Dramatic snow-capped mountain peak as focal point; layered mountain ridges creating sense of depth; stunning sky gradient from dark navy at top to warm orange near horizon</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">A beautifully composed landscape photograph capturing a snow-capped mountain peak during golden hour. The image demonstrates excellent photographic technique with proper exposure handling of the challenging high-contrast scene. The warm orange and amber tones of the sky create a striking contrast with the cool blue shadows on the mountain.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo 12 -->
+                <div class="photo-card" data-category="mixed">
+                    <div class="photo-wrapper">
+                        <img src="../photos/photo12.jpg" alt="European farmers market" loading="lazy">
+                        <span class="photo-category mixed">Mixed</span>
+                    </div>
+                    <div class="photo-content">
+                        <h3 class="photo-title">photo12.jpg</h3>
+                        <p class="photo-description">Bustling indoor farmers market with vendors and shoppers surrounded by fresh vegetables. Multiple people visible including a vendor in green apron and a man in red jacket.</p>
+
+                        <div class="photo-meta">
+                            <div class="meta-row">
+                                <span class="meta-label">Dominant Colors</span>
+                                <div class="photo-colors">
+                                    <div class="photo-color" style="background: #228B22" title="green"></div>
+                                    <div class="photo-color" style="background: #0000FF" title="blue"></div>
+                                    <div class="photo-color" style="background: #DC143C" title="red"></div>
+                                    <div class="photo-color" style="background: #808080" title="gray"></div>
+                                    <div class="photo-color" style="background: #8B4513" title="brown"></div>
+                                </div>
+                            </div>
+                            <div class="meta-row">
+                                <span class="meta-label">Suggested Uses</span>
+                                <div class="photo-tags">
+                                    <span class="use-tag">food blog</span>
+                                    <span class="use-tag">travel blog</span>
+                                    <span class="use-tag">culinary website</span>
+                                    <span class="use-tag">sustainable living</span>
+                                    <span class="use-tag">stock photography</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Mood:</strong> <span>Vibrant, authentic, bustling</span></div>
+                                <div class="info-item"><strong>Time:</strong> <span>Daytime</span></div>
+                                <div class="info-item"><strong>Setting:</strong> <span>Indoor market</span></div>
+                                <div class="info-item"><strong>Quality:</strong> <span>Good</span></div>
+                            </div>
+                        </div>
+
+                        <button class="details-toggle" onclick="toggleDetails(this)">
+                            <span>More Details</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6"></path>
+                            </svg>
+                        </button>
+                        <div class="expanded-details">
+                            <div class="detail-section">
+                                <div class="detail-label">Activity</div>
+                                <div class="detail-text">Selling and shopping for fresh produce at a traditional market</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Environment</div>
+                                <div class="detail-text">Large covered market hall with industrial iron/steel beam architecture and glass roof panels allowing natural light. European-style traditional market building.</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Notable Features</div>
+                                <div class="detail-text">Industrial iron beam ceiling structure with glass panels; colorful plastic crates; price signs in Italian including ASPARAGI; traditional market scale; abundant fresh green vegetables</div>
+                            </div>
+                            <div class="detail-section">
+                                <div class="detail-label">Detailed Notes</div>
+                                <div class="detail-text">This image captures an authentic European farmers market scene, likely in Italy based on the Italian price signs. The covered market hall features classic industrial architecture with iron beams and glass roofing typical of 19th-century European market buildings. The scene showcases the vibrant culture of fresh produce shopping.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Photo Analysis Report - Generated on December 5, 2025</p>
+        <p>Powered by Agentic Batch Processing</p>
+    </footer>
+
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const label = document.getElementById('theme-label');
+            if (body.hasAttribute('data-theme')) {
+                body.removeAttribute('data-theme');
+                label.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                label.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+            document.getElementById('theme-label').textContent = 'Light Mode';
+        }
+
+        // Filter functionality
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const photoCards = document.querySelectorAll('.photo-card');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active button
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Filter cards
+                const filter = btn.dataset.filter;
+                photoCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category === filter) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        // Toggle details
+        function toggleDetails(button) {
+            const details = button.nextElementSibling;
+            button.classList.toggle('expanded');
+            details.classList.toggle('show');
+            button.querySelector('span').textContent = details.classList.contains('show') ? 'Less Details' : 'More Details';
+        }
+    </script>
+</body>
+</html>

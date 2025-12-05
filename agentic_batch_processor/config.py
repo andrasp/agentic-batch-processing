@@ -1,0 +1,22 @@
+"""Central configuration defaults for Agentic Batch Processor.
+
+All default values should be defined here as the single source of truth.
+"""
+
+DEFAULT_MAX_WORKERS = 4
+DEFAULT_MAX_RETRIES = 3
+DEFAULT_DASHBOARD_PORT = 3847
+DEFAULT_SKIP_TEST = False
+DEFAULT_STORAGE_DIR = ".agentic-batch"
+DEFAULT_DB_FILENAME = "batch.db"
+
+DEFAULT_WORKER_TIMEOUT = 600.0
+DEFAULT_POLL_INTERVAL = 1.0
+DEFAULT_DB_TIMEOUT = 5.0
+
+DEFAULT_JOB_LIST_LIMIT = 50
+DEFAULT_UNIT_LIST_LIMIT = 100
+DEFAULT_LOG_LIST_LIMIT = 100
+
+PREVIEW_TEXT_LIMIT = 200
+PREVIEW_INPUT_LIMIT = 100

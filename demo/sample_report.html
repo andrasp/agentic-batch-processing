@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Analysis Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-breakdown {
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .category-person { background: #e74c3c; }
+        .category-animal { background: #27ae60; }
+        .category-place { background: #3498db; }
+        .category-other { background: #9b59b6; }
+
+        .stat-count {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .color-swatches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .color-swatch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .swatch-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .mood-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .mood-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Gallery Section */
+        .gallery-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .photo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .photo-wrapper {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+        }
+
+        .photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-card:hover .photo-wrapper img {
+            transform: scale(1.08);
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-person { background: #e74c3c; color: white; }
+        .badge-animal { background: #27ae60; color: white; }
+        .badge-place { background: #3498db; color: white; }
+        .badge-other { background: #9b59b6; color: white; }
+
+        .photo-content {
+            padding: 25px;
+        }
+
+        .photo-filename {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .photo-description {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        .photo-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .meta-section {
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .photo-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .photo-color {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .photo-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .photo-mood {
+            font-style: italic;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .photo-projects {
+            font-size: 0.85rem;
+            color: #b0b0b0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Photo Analysis Report</h1>
+            <p class="subtitle">AI-powered analysis of 12 photographs</p>
+        </header>
+
+        <section class="summary-section">
+            <h2>Summary Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Photos Analyzed</h3>
+                    <div class="stat-value">12</div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Categories</h3>
+                    <div class="stat-breakdown">
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <span class="category-icon category-person">👤</span>
+                                People
+                            </span>
+                            <span class="stat-count">4</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <span class="category-icon category-animal">🐾</span>
+                                Animals
+                            </span>
+                            <span class="stat-count">4</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <span class="category-icon category-place">🏛</span>
+                                Places
+                            </span>
+                            <span class="stat-count">4</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">
+                                <span class="category-icon category-other">✨</span>
+                                Other
+                            </span>
+                            <span class="stat-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Most Common Moods</h3>
+                    <div class="mood-tags">
+                        <span class="mood-tag">Serene</span>
+                        <span class="mood-tag">Peaceful</span>
+                        <span class="mood-tag">Atmospheric</span>
+                        <span class="mood-tag">Nostalgic</span>
+                        <span class="mood-tag">Professional</span>
+                        <span class="mood-tag">Contemplative</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Most Common Colors</h3>
+                    <div class="color-swatches">
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #4a4a4a;"></span>
+                            Charcoal/Gray
+                        </span>
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #f5f5dc;"></span>
+                            Cream/Beige
+                        </span>
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #228b22;"></span>
+                            Green
+                        </span>
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #d2691e;"></span>
+                            Brown/Tan
+                        </span>
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #000000;"></span>
+                            Black
+                        </span>
+                        <span class="color-swatch">
+                            <span class="swatch-circle" style="background: #ffffff;"></span>
+                            White
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gallery-section">
+            <h2>Photo Gallery</h2>
+            <div class="gallery-grid">
+                <!-- Photo 1 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo1.jpg" alt="Vintage photograph of two gentlemen" loading="lazy">
+                        <span class="category-badge badge-person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo1.jpg</p>
+                        <p class="photo-description">Vintage sepia-toned photograph of two distinguished gentlemen seated on stone steps in front of a grand building with classical columns. The elder man has a white beard and mustache, wears a fedora and three-piece suit. The younger man is clean-shaven with a boutonnière and cigarette. Early 20th century attire and photographic style.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #704214;"></span>Sepia Brown</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #fffdd0;"></span>Cream</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Charcoal Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #d2b48c;"></span>Tan</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #fffff0;"></span>Ivory</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Formal, dignified, nostalgic, and historically significant. Evokes early 20th century elegance and gravitas.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Historical documentaries, vintage-themed publications, early 20th century period pieces, museum exhibits, genealogy projects, historical fiction book covers, educational materials about fashion history</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 2 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo2.jpg" alt="Street musician with mandolin" loading="lazy">
+                        <span class="category-badge badge-person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo2.jpg</p>
+                        <p class="photo-description">A street musician with reddish-brown hair and full beard playing a mandolin or bouzouki. He wears a casual blue henley shirt and jeans, deeply focused on his music with eyes closed. Seated on an amplifier in front of an ornate wrought-iron gate of a historic stone building in a European city setting.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #708090;"></span>Slate Blue</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #eb9605;"></span>Honey Gold</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Charcoal Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #f5deb3;"></span>Warm Beige</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #013220;"></span>Dark Green</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Contemplative and artistic - captures an intimate moment of musical expression in an urban setting. Warm and inviting with creative authenticity.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Music-related marketing materials, travel and tourism campaigns for European cities, lifestyle blogs about street culture or busking, album artwork, editorial pieces about urban artists</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 3 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo3.jpg" alt="Sushi chef at work" loading="lazy">
+                        <span class="category-badge badge-person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo3.jpg</p>
+                        <p class="photo-description">A young sushi chef with curly hair works at a restaurant counter. He wears a black chef uniform and disposable gloves while carefully preparing food. His expression is focused and concentrated on his craft. Other kitchen staff work at their stations behind the sushi bar in an upscale restaurant setting.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #000000;"></span>Black</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #654321;"></span>Dark Brown</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ff8c00;"></span>Warm Orange</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #808080;"></span>Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #fffdd0;"></span>Cream</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Professional, focused, and industrious. The warm ambient lighting creates an intimate dining atmosphere with a sense of craftsmanship.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Restaurant marketing and branding, culinary school promotional materials, food industry career profiles, hospitality website imagery, behind-the-scenes restaurant content</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 4 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo4.jpg" alt="Figure skater performing backbend" loading="lazy">
+                        <span class="category-badge badge-person">Person</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo4.jpg</p>
+                        <p class="photo-description">A female figure skater performing an impressive backbend move on an ice rink. Dressed entirely in black practice attire with white figure skates. Her long brown hair cascades toward the ice as she arches dramatically backward, demonstrating remarkable flexibility and athletic skill.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffffff;"></span>White</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #000000;"></span>Black</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #808080;"></span>Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #008080;"></span>Teal-Green</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffff00;"></span>Yellow</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Graceful, athletic, focused, and dramatic. Captures a moment of intense physical artistry and dedication to the sport.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Sports photography portfolios, winter sports marketing materials, figure skating promotional content, fitness and flexibility inspiration, athletic achievement stories</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 5 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo5.jpg" alt="Giraffe crossing road on safari" loading="lazy">
+                        <span class="category-badge badge-animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo5.jpg</p>
+                        <p class="photo-description">A giraffe crossing a dirt road in an African safari setting, likely Kenya. Safari vehicles wait for it to pass. The scene is set in a lush, forested area with dense green vegetation, suggesting a national park or wildlife reserve during the wet/green season.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #228b22;"></span>Forest Green</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #808000;"></span>Olive Brown</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #d2b48c;"></span>Tan/Cream</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #013220;"></span>Dark Green</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #c2b280;"></span>Dusty Beige</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Peaceful and adventurous - captures the magical moment of a wildlife encounter during an African safari with a sense of wonder and respect for nature.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Travel and tourism marketing for African safaris, wildlife conservation campaigns, nature documentaries, eco-tourism promotional materials, travel blogs and magazines</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 6 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo6.jpg" alt="Seagulls flying over ocean" loading="lazy">
+                        <span class="category-badge badge-animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo6.jpg</p>
+                        <p class="photo-description">Four seagulls (likely black-headed gulls) captured in flight over the ocean. The birds display graceful wing positions mid-flight, flying low over gentle breaking waves at a beach. The overcast sky creates soft, even lighting as they appear to be foraging or gliding along the shoreline.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #a9a9a9;"></span>Soft Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffffff;"></span>White</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #008080;"></span>Muted Teal</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Charcoal</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #f5f5dc;"></span>Pale Cream</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Serene, peaceful, and contemplative. The muted color palette creates a calm, almost meditative atmosphere with a sense of freedom and natural grace.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Nature documentaries, coastal tourism materials, environmental conservation campaigns, meditation or wellness apps, minimalist wall art, editorial photography for travel magazines</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 7 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo7.jpg" alt="Mixed-breed dog studio portrait" loading="lazy">
+                        <span class="category-badge badge-animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo7.jpg</p>
+                        <p class="photo-description">A professional studio portrait of a mixed-breed dog, likely with Australian Shepherd or Kelpie heritage. Black and tan coat with distinctive markings. Sits attentively with head slightly tilted in a curious, endearing pose with warm, expressive brown eyes that convey intelligence and personality.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #000000;"></span>Black</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #d2691e;"></span>Tan/Golden Brown</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #696969;"></span>Dark Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #fffdd0;"></span>Cream/White</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Charcoal</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Warm, intimate, and endearing. The professional portrait captures the dog's curious personality with a studio quality that feels both polished and personal.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Pet photography portfolios, animal shelter adoption campaigns, veterinary clinic marketing, pet product advertising, greeting cards, pet memorial services</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 8 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo8.jpg" alt="Yellow seahorse in aquarium" loading="lazy">
+                        <span class="category-badge badge-animal">Animal</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo8.jpg</p>
+                        <p class="photo-description">A bright yellow seahorse swimming gracefully in an aquarium environment. Displays its characteristic curled prehensile tail and elongated snout with delicate dorsal fin in motion. Hovers near the sandy bottom with green aquatic plants in soft-focus background.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffd700;"></span>Bright Yellow</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #000080;"></span>Deep Navy Blue</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #228b22;"></span>Forest Green</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #c2b280;"></span>Sandy Beige</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #32cd32;"></span>Lime Green</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Serene, magical, and captivating. The image has a dreamy underwater quality with the vibrant yellow seahorse creating a sense of wonder and tranquility.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Marine biology educational materials, aquarium promotional content, children's books about ocean life, underwater photography portfolios, environmental conservation campaigns</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 9 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo9.jpg" alt="Abandoned industrial factory" loading="lazy">
+                        <span class="category-badge badge-place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo9.jpg</p>
+                        <p class="photo-description">An abandoned industrial factory complex from the early 20th century now in ruins. Multi-story brick and concrete buildings with empty window frames. Debris, rubble, and overgrown vegetation fill the ground level. Bare tree branches and graffiti visible. Captured during late autumn or winter on an overcast day.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #b7410e;"></span>Rust Brown</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #808080;"></span>Concrete Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #d3d3d3;"></span>Overcast White</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Dark Charcoal</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #6b8e23;"></span>Muted Olive</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Desolate, haunting, and melancholic. Evokes a sense of abandonment, decay, and the passage of time with an eerie beauty in the industrial ruins.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Urban exploration documentaries, post-apocalyptic film/game concepts, industrial history projects, artistic photography portfolios, album covers for atmospheric music genres</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 10 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo10.jpg" alt="Japanese alleyway with lanterns" loading="lazy">
+                        <span class="category-badge badge-place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo10.jpg</p>
+                        <p class="photo-description">A narrow alleyway in Japan, likely Omoide Yokocho (Memory Lane) in Tokyo. Evening scene with traditional paper lanterns illuminating the path - glowing orange, red, and white. Japanese signage advertises sushi restaurants and izakayas. Wet pavement reflects the lantern light in this authentic Japanese nightlife dining culture scene.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ff8c00;"></span>Warm Orange</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #8b0000;"></span>Deep Red</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #4682b4;"></span>Cool Blue</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #f5f5f5;"></span>Soft White</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Dark Charcoal</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Atmospheric, nostalgic, and inviting. The warm lantern glow against evening darkness creates a cozy, intimate feeling that evokes traditional Japanese culture.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Travel blogs and magazines, Japanese culture documentaries, restaurant and food industry marketing, tourism campaigns for Japan, book covers for fiction set in Japan</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 11 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo11.jpg" alt="Mountain sunset landscape" loading="lazy">
+                        <span class="category-badge badge-place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo11.jpg</p>
+                        <p class="photo-description">A stunning mountain landscape at sunset or sunrise. A snow-capped mountain peak rises prominently in the center, illuminated with a soft pink-purple glow from the alpenglow effect. The sky displays a dramatic gradient from deep burnt orange and amber near the horizon to dark charcoal at the top. Wispy clouds streak across the frame.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #cc5500;"></span>Burnt Orange</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #36454f;"></span>Deep Charcoal</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffb6c1;"></span>Soft Pink</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ffbf00;"></span>Amber Gold</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #6a5acd;"></span>Slate Purple</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Dramatic, serene, majestic, awe-inspiring. Evokes a sense of peace and grandeur with contrast between warm sky and cool snow-capped peaks.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Travel and adventure marketing, nature documentaries, meditation or wellness apps, desktop wallpapers, outdoor gear advertising, inspirational posters, alpine resort branding</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Photo 12 -->
+                <article class="photo-card">
+                    <div class="photo-wrapper">
+                        <img src="photos/photo12.jpg" alt="Indoor farmers market" loading="lazy">
+                        <span class="category-badge badge-place">Place</span>
+                    </div>
+                    <div class="photo-content">
+                        <p class="photo-filename">photo12.jpg</p>
+                        <p class="photo-description">A bustling indoor farmers market with a large industrial steel and glass roof structure. Multiple vendors and customers surrounded by abundant fresh vegetables - leafy greens like leeks, lettuce, and herbs. The market appears to be European, likely Portuguese or Spanish. Natural daylight filters through the large glass roof panels.</p>
+                        <div class="photo-meta">
+                            <div class="meta-section">
+                                <p class="meta-label">Dominant Colors</p>
+                                <div class="photo-colors">
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #228b22;"></span>Green</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #708090;"></span>Steel Gray</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #ff0000;"></span>Red</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #0000ff;"></span>Blue</span>
+                                    <span class="photo-color"><span class="photo-color-dot" style="background: #8b4513;"></span>Brown</span>
+                                </div>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Mood</p>
+                                <p class="photo-mood">Lively, authentic, industrious. Conveys the energy of a traditional working market with organized chaos and a sense of community and daily commerce.</p>
+                            </div>
+                            <div class="meta-section">
+                                <p class="meta-label">Suggested Projects</p>
+                                <p class="photo-projects">Food and culinary publications, travel and tourism marketing for European destinations, farm-to-table restaurant branding, sustainable agriculture campaigns, editorial pieces on local markets</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
