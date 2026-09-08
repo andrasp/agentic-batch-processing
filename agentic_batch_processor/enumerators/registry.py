@@ -8,7 +8,6 @@ from typing import Any, Dict, Optional, Type
 
 from .base import BaseEnumerator
 
-
 _ENUMERATOR_REGISTRY: Dict[str, Type[BaseEnumerator]] = {}
 
 

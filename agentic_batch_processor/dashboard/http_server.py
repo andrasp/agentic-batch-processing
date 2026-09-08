@@ -36,7 +36,6 @@ from ..config import (
 from ..persistence.repository import Repository
 from .api.routes import create_api_routes
 
-
 STATIC_DIR = Path(__file__).parent / "static"
 
 PID_FILE_NAME = "dashboard.pid"

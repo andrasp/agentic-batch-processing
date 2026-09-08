@@ -16,7 +16,6 @@ from typing import Dict, Any, Optional, List, Callable
 from .base import BaseWorker, WorkerResult
 from ..config import DEFAULT_WORKER_TIMEOUT
 
-
 StreamCallback = Callable[[str, Dict[str, Any]], None]
 ProcessCallback = Callable[[int], None]  # Called with PID when process starts
 

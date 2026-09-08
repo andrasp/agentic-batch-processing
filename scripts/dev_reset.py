@@ -17,7 +17,6 @@ import signal
 import sys
 from pathlib import Path
 
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from agentic_batch_processor.persistence.repository import Repository
@@ -93,13 +92,11 @@ def main():
     try:
 
         with repo._get_connection() as conn:
-            rows = conn.execute(
-                """
+            rows = conn.execute("""
                 SELECT worker_id, process_id, job_id, status
                 FROM workers
                 WHERE process_id IS NOT NULL
-            """
-            ).fetchall()
+            """).fetchall()
 
         for row in rows:
             if row["process_id"]:

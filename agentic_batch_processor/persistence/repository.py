@@ -64,8 +64,7 @@ class Repository:
         """Initialize database schema."""
         with self._get_connection() as conn:
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS jobs (
                     job_id TEXT PRIMARY KEY,
                     name TEXT NOT NULL,
@@ -85,11 +84,9 @@ class Repository:
                     output_strategy TEXT DEFAULT 'individual',
                     metadata TEXT
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS work_units (
                     unit_id TEXT PRIMARY KEY,
                     job_id TEXT NOT NULL,
@@ -113,11 +110,9 @@ class Repository:
                     cost_usd REAL,
                     FOREIGN KEY (job_id) REFERENCES jobs(job_id)
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS workers (
                     worker_id TEXT PRIMARY KEY,
                     status TEXT NOT NULL,
@@ -130,11 +125,9 @@ class Repository:
                     units_failed INTEGER DEFAULT 0,
                     total_execution_time REAL DEFAULT 0.0
                 )
-            """
-            )
+            """)
 
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     job_id TEXT NOT NULL,
@@ -147,8 +140,7 @@ class Repository:
                     extra TEXT,
                     FOREIGN KEY (job_id) REFERENCES jobs(job_id)
                 )
-            """
-            )
+            """)
 
             conn.execute("CREATE INDEX IF NOT EXISTS idx_work_units_job_id ON work_units(job_id)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_work_units_status ON work_units(status)")
